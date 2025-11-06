@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏥 Clínica Veterinaria - Sistema de Gestión</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .tab-button {
+            transition: all 0.3s ease;
+        }
+        
+        .tab-button.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .card {
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        input, select, textarea {
+            transition: all 0.3s ease;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .notification {
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 min-h-screen">
+    
+    <div class="container mx-auto px-4 py-8 max-w-7xl">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-5xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
+                <i class="fas fa-paw text-indigo-600"></i> Clínica Veterinaria
+            </h1>
+            <p class="text-gray-600 text-lg">Sistema de Gestión Integral</p>
+        </div>
+
+        <!-- Notification -->
+        <div id="notification" class="hidden fixed top-4 right-4 z-50 notification max-w-md"></div>
+
+        <!-- Tabs Navigation -->
+        <div class="bg-white rounded-xl shadow-lg p-2 mb-6 flex flex-wrap gap-2">
+            <button class="tab-button active px-6 py-3 rounded-lg font-semibold" data-tab="animales">
+                <i class="fas fa-dog mr-2"></i>Animales
+            </button>
+            <button class="tab-button px-6 py-3 rounded-lg font-semibold text-gray-700 hover:bg-gray-100" data-tab="duenos">
+                <i class="fas fa-user mr-2"></i>Dueños
+            </button>
+            <button class="tab-button px-6 py-3 rounded-lg font-semibold text-gray-700 hover:bg-gray-100" data-tab="veterinarios">
+                <i class="fas fa-user-md mr-2"></i>Veterinarios
+            </button>
+            <button class="tab-button px-6 py-3 rounded-lg font-semibold text-gray-700 hover:bg-gray-100" data-tab="tratamientos">
+                <i class="fas fa-pills mr-2"></i>Tratamientos
+            </button>
+            <button class="tab-button px-6 py-3 rounded-lg font-semibold text-gray-700 hover:bg-gray-100" data-tab="configuracion">
+                <i class="fas fa-cog mr-2"></i>Configuración
+            </button>
+        </div>
+
+        <!-- Tab Content: Animales -->
+        <div id="tab-animales" class="tab-content">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Form -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white rounded-xl shadow-lg p-6 card">
+                        <h2 class="text-2xl font-bold mb-4 text-gray-800">
+                            <i class="fas fa-plus-circle text-indigo-600 mr-2"></i>
+                            <span id="animalFormTitle">Nuevo Animal</span>
+                        </h2>
+                        <form id="animalForm" class="space-y-4">
+                            <input type="hidden" id="animalId">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
+                                <input type="text" id="animalNombre" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Especie *</label>
+                                <select id="animalEspecieId" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                                    <option value="">Cargando...</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Raza</label>
+                                <select id="animalRazaId" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                                    <option value="">Seleccione primero una especie</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Fecha de Nacimiento</label>
+                                <input type="date" id="animalFechaNac" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Color</label>
+                                <input type="text" id="animalColor" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Peso (kg)</label>
+                                <input type="number" step="0.1" id="animalPeso" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Dueño</label>
+                                <select id="animalDuenoId" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                                    <option value="">Sin dueño</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Observaciones Historia</label>
+                                <textarea id="animalObservaciones" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none"></textarea>
+                            </div>
+                            <div class="flex gap-2">
+                                <button type="submit" class="btn-primary text-white px-6 py-2 rounded-lg font-semibold flex-1">
+                                    <i class="fas fa-save mr-2"></i><span id="animalSubmitText">Guardar</span>
+                                </button>
+                                <button type="button" id="animalCancelBtn" class="hidden bg-gray-500 text-white px-6 py-2 rounded-lg font-semibold">
+                                    <i class="fas fa-times mr-2"></i>Cancelar
+                                </button>
+                            </div>
+            </form>
+                    </div>
+        </div>
+
+                <!-- List -->
+                <div class="lg:col-span-2">
+                    <div class="bg-white rounded-xl shadow-lg p-6 card">
+                        <h2 class="text-2xl font-bold mb-4 text-gray-800">
+                            <i class="fas fa-list text-indigo-600 mr-2"></i>Lista de Animales
+                        </h2>
+                        <div id="animalesList" class="space-y-3">
+                            <div class="text-center py-8 text-gray-500">
+                                <i class="fas fa-spinner fa-spin text-3xl mb-2"></i>
+                                <p>Cargando...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+        </div>
+    </div>
+
+        <!-- Tab Content: Dueños -->
+        <div id="tab-duenos" class="tab-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-1">
+                    <div class="bg-white rounded-xl shadow-lg p-6 card">
+                        <h2 class="text-2xl font-bold mb-4 text-gray-800">
+                            <i class="fas fa-user-plus text-indigo-600 mr-2"></i>
+                            <span id="duenoFormTitle">Nuevo Dueño</span>
+                        </h2>
+                        <form id="duenoForm" class="space-y-4">
+                            <input type="hidden" id="duenoId">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
+                                <input type="text" id="duenoNombre" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
+                                <input type="text" id="duenoDireccion" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                                <input type="tel" id="duenoTelefono" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                <input type="email" id="duenoEmail" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                            </div>
+                            <div class="flex gap-2">
+                                <button type="submit" class="btn-primary text-white px-6 py-2 rounded-lg font-semibold flex-1">
+                                    <i class="fas fa-save mr-2"></i><span id="duenoSubmitText">Guardar</span>
+                                </button>
+                                <button type="button" id="duenoCancelBtn" class="hidden bg-gray-500 text-white px-6 py-2 rounded-lg font-semibold">
+                                    <i class="fas fa-times mr-2"></i>Cancelar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="lg:col-span-2">
+                    <div class="bg-white rounded-xl shadow-lg p-6 card">
+                        <h2 class="text-2xl font-bold mb-4 text-gray-800">
+                            <i class="fas fa-users text-indigo-600 mr-2"></i>Lista de Dueños
+                        </h2>
+                        <div id="duenosList" class="space-y-3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Content: Veterinarios -->
+        <div id="tab-veterinarios" class="tab-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-1">
+                    <div class="bg-white rounded-xl shadow-lg p-6 card">
+                        <h2 class="text-2xl font-bold mb-4 text-gray-800">
+                            <i class="fas fa-user-md text-indigo-600 mr-2"></i>
+                            <span id="veterinarioFormTitle">Nuevo Veterinario</span>
+                        </h2>
+                        <form id="veterinarioForm" class="space-y-4">
+                            <input type="hidden" id="veterinarioId">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
+                                <input type="text" id="veterinarioNombre" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
+                                <input type="text" id="veterinarioDireccion" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                                <input type="tel" id="veterinarioTelefono" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Número de Licencia *</label>
+                                <input type="text" id="veterinarioLicencia" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Especialidad</label>
+                                <input type="text" id="veterinarioEspecialidad" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                            </div>
+                            <div class="flex gap-2">
+                                <button type="submit" class="btn-primary text-white px-6 py-2 rounded-lg font-semibold flex-1">
+                                    <i class="fas fa-save mr-2"></i><span id="veterinarioSubmitText">Guardar</span>
+                                </button>
+                                <button type="button" id="veterinarioCancelBtn" class="hidden bg-gray-500 text-white px-6 py-2 rounded-lg font-semibold">
+                                    <i class="fas fa-times mr-2"></i>Cancelar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="lg:col-span-2">
+                    <div class="bg-white rounded-xl shadow-lg p-6 card">
+                        <h2 class="text-2xl font-bold mb-4 text-gray-800">
+                            <i class="fas fa-user-md text-indigo-600 mr-2"></i>Lista de Veterinarios
+                        </h2>
+                        <div id="veterinariosList" class="space-y-3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Content: Tratamientos -->
+        <div id="tab-tratamientos" class="tab-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-1">
+                    <div class="bg-white rounded-xl shadow-lg p-6 card">
+                        <h2 class="text-2xl font-bold mb-4 text-gray-800">
+                            <i class="fas fa-pills text-indigo-600 mr-2"></i>
+                            <span id="tratamientoFormTitle">Nuevo Tratamiento</span>
+                        </h2>
+                        <form id="tratamientoForm" class="space-y-4">
+                            <input type="hidden" id="tratamientoId">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Animal *</label>
+                                <select id="tratamientoAnimalId" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                                    <option value="">Seleccionar...</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Veterinario *</label>
+                                <select id="tratamientoVeterinarioId" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                                    <option value="">Seleccionar...</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Descripción *</label>
+                                <textarea id="tratamientoDescripcion" required rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Medicamento</label>
+                                <select id="tratamientoMedicamentoId" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                                    <option value="">Sin medicamento</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Dosis</label>
+                                <input type="text" id="tratamientoDosis" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Diagnóstico</label>
+                                <textarea id="tratamientoDiagnostico" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Próxima Cita</label>
+                                <input type="datetime-local" id="tratamientoProximaCita" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                            </div>
+                            <div class="flex gap-2">
+                                <button type="submit" class="btn-primary text-white px-6 py-2 rounded-lg font-semibold flex-1">
+                                    <i class="fas fa-save mr-2"></i><span id="tratamientoSubmitText">Guardar</span>
+                                </button>
+                                <button type="button" id="tratamientoCancelBtn" class="hidden bg-gray-500 text-white px-6 py-2 rounded-lg font-semibold">
+                                    <i class="fas fa-times mr-2"></i>Cancelar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="lg:col-span-2">
+                    <div class="bg-white rounded-xl shadow-lg p-6 card">
+                        <h2 class="text-2xl font-bold mb-4 text-gray-800">
+                            <i class="fas fa-list text-indigo-600 mr-2"></i>Lista de Tratamientos
+                        </h2>
+                        <div id="tratamientosList" class="space-y-3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Content: Configuración -->
+        <div id="tab-configuracion" class="tab-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Especies -->
+                <div class="bg-white rounded-xl shadow-lg p-6 card">
+                    <h2 class="text-2xl font-bold mb-4 text-gray-800">
+                        <i class="fas fa-dna text-indigo-600 mr-2"></i>Especies
+                    </h2>
+                    <form id="especieForm" class="space-y-4 mb-4">
+                        <input type="hidden" id="especieId">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
+                            <input type="text" id="especieNombre" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                            <textarea id="especieDescripcion" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none"></textarea>
+                        </div>
+                        <div class="flex gap-2">
+                            <button type="submit" class="btn-primary text-white px-4 py-2 rounded-lg font-semibold flex-1">
+                                <i class="fas fa-save mr-2"></i><span id="especieSubmitText">Guardar</span>
+                            </button>
+                            <button type="button" id="especieCancelBtn" class="hidden bg-gray-500 text-white px-4 py-2 rounded-lg font-semibold">
+                                <i class="fas fa-times mr-2"></i>Cancelar
+                            </button>
+                        </div>
+                    </form>
+                    <div id="especiesList" class="space-y-2 max-h-96 overflow-y-auto"></div>
+                </div>
+
+                <!-- Razas -->
+                <div class="bg-white rounded-xl shadow-lg p-6 card">
+                    <h2 class="text-2xl font-bold mb-4 text-gray-800">
+                        <i class="fas fa-paw text-green-600 mr-2"></i>Razas
+                    </h2>
+                    <form id="razaForm" class="space-y-4 mb-4">
+                        <input type="hidden" id="razaId">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Especie *</label>
+                            <select id="razaEspecieId" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                                <option value="">Cargando...</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
+                            <input type="text" id="razaNombre" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                            <textarea id="razaDescripcion" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none"></textarea>
+                        </div>
+                        <div class="flex gap-2">
+                            <button type="submit" class="btn-primary text-white px-4 py-2 rounded-lg font-semibold flex-1">
+                                <i class="fas fa-save mr-2"></i><span id="razaSubmitText">Guardar</span>
+                            </button>
+                            <button type="button" id="razaCancelBtn" class="hidden bg-gray-500 text-white px-4 py-2 rounded-lg font-semibold">
+                                <i class="fas fa-times mr-2"></i>Cancelar
+                            </button>
+                        </div>
+                    </form>
+                    <div id="razasList" class="space-y-2 max-h-96 overflow-y-auto"></div>
+                </div>
+
+                <!-- Medicamentos -->
+                <div class="bg-white rounded-xl shadow-lg p-6 card">
+                    <h2 class="text-2xl font-bold mb-4 text-gray-800">
+                        <i class="fas fa-capsules text-purple-600 mr-2"></i>Medicamentos
+                    </h2>
+                    <form id="medicamentoForm" class="space-y-4 mb-4">
+                        <input type="hidden" id="medicamentoId">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
+                            <input type="text" id="medicamentoNombre" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Principio Activo</label>
+                            <input type="text" id="medicamentoPrincipioActivo" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Presentación</label>
+                            <input type="text" id="medicamentoPresentacion" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                            <textarea id="medicamentoDescripcion" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none"></textarea>
+                        </div>
+                        <div class="flex gap-2">
+                            <button type="submit" class="btn-primary text-white px-4 py-2 rounded-lg font-semibold flex-1">
+                                <i class="fas fa-save mr-2"></i><span id="medicamentoSubmitText">Guardar</span>
+                            </button>
+                            <button type="button" id="medicamentoCancelBtn" class="hidden bg-gray-500 text-white px-4 py-2 rounded-lg font-semibold">
+                                <i class="fas fa-times mr-2"></i>Cancelar
+                            </button>
+                        </div>
+                    </form>
+                    <div id="medicamentosList" class="space-y-2 max-h-96 overflow-y-auto"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Historia Clínica -->
+    <div id="historiaClinicaModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="sticky top-0 bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-6 rounded-t-xl flex justify-between items-center">
+                <h2 class="text-2xl font-bold">
+                    <i class="fas fa-file-medical mr-2"></i>Historia Clínica
+                </h2>
+                <button onclick="closeHistoriaClinicaModal()" class="text-white hover:text-gray-200 text-2xl">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <div id="historiaClinicaInfo" class="mb-6">
+                    <div class="bg-gray-50 p-4 rounded-lg mb-4">
+                        <p class="text-sm text-gray-600 mb-2">
+                            <span class="font-semibold">Animal:</span> 
+                            <span id="historiaAnimalNombre" class="text-gray-800"></span>
+                        </p>
+                        <p class="text-sm text-gray-600">
+                            <span class="font-semibold">Fecha de Creación:</span> 
+                            <span id="historiaFechaCreacion" class="text-gray-800"></span>
+                        </p>
+                    </div>
+                </div>
+                <form id="historiaClinicaForm" class="space-y-4">
+                    <input type="hidden" id="historiaAnimalId">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-notes-medical mr-2 text-indigo-600"></i>Observaciones
+                        </label>
+                        <textarea id="historiaObservaciones" rows="8" 
+                                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                  placeholder="Ingrese las observaciones de la historia clínica..."></textarea>
+                    </div>
+                    <div class="flex gap-3 pt-4">
+                        <button type="submit" class="btn-primary text-white px-6 py-3 rounded-lg font-semibold flex-1">
+                            <i class="fas fa-save mr-2"></i>
+                            <span id="historiaSubmitText">Guardar Cambios</span>
+                        </button>
+                        <button type="button" onclick="closeHistoriaClinicaModal()" 
+                                class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-semibold">
+                            <i class="fas fa-times mr-2"></i>Cancelar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
